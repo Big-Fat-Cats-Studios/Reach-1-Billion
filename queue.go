@@ -37,7 +37,8 @@ var q = NewQueue()
 
 // Use atomic-friendly types
 var globalNumber uint32
-var isRunning uint32 // 0 for false, 1 for true
+var isRunning uint32 // 0 for false, 1 for true'
+var highScore uint32
 
 func processQueue() {
 	if !atomic.CompareAndSwapUint32(&isRunning, 0, 1) {
@@ -72,6 +73,10 @@ func processQueue() {
 		default:
 			atomic.AddUint32(&globalNumber, val)
 		}
+        
+        if globalNumber > highScore {
+            atomic.StoreUint32(&highScore, globalNumber)
+        }
 
 		fmt.Printf("Processed: %d | Current Total: %d\n", val, atomic.LoadUint32(&globalNumber))
 	}
