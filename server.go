@@ -24,9 +24,14 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		// if a single server sends more than 500 clicks in a second then something is clearly wrong
-		if newBatch.ClickCount == 0 || newBatch.ClickCount > 500 {
-			c.JSON(http.StatusLoopDetected, gin.H{"error": "someone may be cheating"})
+
+		// if a single server sends more than 500 clicks in a second then something is clearly wrong, we'll still send status 200 though
+		if newBatch.ClickCount > 500 || newBatch.ClickCount == 0 {
+			c.JSON(http.StatusAccepted, gin.H{
+				"received_id":  newBatch.ID,
+				"status":       "didnt enqueue due to possible cheating or 0 clicks",
+				"global_total": atomic.LoadUint32(&globalNumber),
+			})
 		}
 		// 1. add to queue
 		q.Enqueue(newBatch.ClickCount)
