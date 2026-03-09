@@ -32,8 +32,9 @@ func main() {
 		go processQueue()
 
 		c.IndentedJSON(http.StatusCreated, gin.H{
-			"received_id": newBatch.ID,
-			"status":      "batch enqueued",
+			"received_id":  newBatch.ID,
+			"status":       "batch enqueued",
+			"global_total": atomic.LoadUint32(&globalNumber),
 		})
 	})
 
