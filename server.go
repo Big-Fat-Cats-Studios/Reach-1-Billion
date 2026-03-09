@@ -10,7 +10,7 @@ import (
 
 type Batch struct {
 	ID         uint32 `json:"id" binding:"required"`
-	ClickCount uint32 `json:"clickcount" binding:"required"`
+	ClickCount uint32 `json:"clickcount"`
 }
 
 func main() {
@@ -24,11 +24,14 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		// 1. Add to queue
+		// if a single server sends more than 500 clicks in a second then something is clearly wrong
+		if newBatch.ClickCount == 0 || newBatch.ClickCount > 500 {
+			c.JSON(http.StatusLoopDetected, gin.H{"error": "someone may be cheating"})
+		}
+		// 1. add to queue
 		q.Enqueue(newBatch.ClickCount)
 
-		// 2. Trigger background processing (Non-blocking)
+		// 2. spin up background processing (Non-blocking)
 		go processQueue()
 
 		c.IndentedJSON(http.StatusCreated, gin.H{
@@ -38,7 +41,7 @@ func main() {
 		})
 	})
 
-	// ENDPOINT 2: Just read the total (No body required)
+	// ENDPOINT 2: Just read the total
 	r.GET("/global-number", func(c *gin.Context) {
 		currentValue := atomic.LoadUint32(&globalNumber)
 
