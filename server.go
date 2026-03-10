@@ -10,7 +10,7 @@ import (
 
 type Batch struct {
 	ID         uint32 `json:"id" binding:"required"`
-	ClickCount uint32 `json:"clickcount"`
+	ClickCount int32  `json:"clickcount"`
 }
 
 func main() {
@@ -33,6 +33,7 @@ func main() {
 				"global_total": atomic.LoadUint32(&globalNumber),
 			})
 		}
+
 		// 1. add to queue
 		q.Enqueue(newBatch.ClickCount)
 
