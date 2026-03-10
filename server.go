@@ -32,6 +32,7 @@ func main() {
 				"status":       "didnt enqueue due to possible cheating or 0 clicks",
 				"global_total": atomic.LoadUint32(&globalNumber),
 			})
+			return
 		}
 
 		// 1. add to queue
@@ -45,6 +46,7 @@ func main() {
 			"status":       "batch enqueued",
 			"global_total": atomic.LoadUint32(&globalNumber),
 		})
+		return
 	})
 
 	// ENDPOINT 2: Just read the total
